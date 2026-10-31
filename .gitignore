@@ -2,6 +2,7 @@
 
 # compiled output
 dist
+public
 tmp
 artifacts/fayda-otp-demo/public/assets
 artifacts/fayda-otp-demo/public/index.html
