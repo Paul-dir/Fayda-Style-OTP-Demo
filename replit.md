@@ -1,6 +1,6 @@
-# [Project name]
+# Fayda-Style OTP Demo
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A prototype showing a fictional identity-ID and one-time-code login flow; it is not an official Fayda service and does not verify real identities.
 
 ## Run & Operate
 
@@ -22,23 +22,32 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/fayda-otp-demo/` — single-page demo experience and client integration
+- `artifacts/api-server/src/routes/mock-auth.ts` — mock verification HTTP endpoints
+- `artifacts/api-server/src/lib/identity-verification-provider.ts` — provider interface for future authorized integrations
+- `artifacts/api-server/src/lib/mock-identity-verification-provider.ts` — fictional identities and simulated OTP implementation
+- `lib/api-spec/openapi.yaml` — API source of truth; regenerate clients with the command above
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The current provider is mock-only: it uses fictional IDs, keeps challenge state in memory, and sends no SMS.
+- The mock OTP is returned only to make the prototype testable. Never expose a code from a real identity provider.
+- Keep any future real provider behind the provider interface and connect only after official authorization and partner API access; do not use this demo to query or enumerate Fayda records.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Enter one of the fictional demo IDs, request a simulated OTP, and complete a mock verification.
+- Demo values are temporary and are not saved to local storage or a database.
+- The successful screen represents a prototype state only, not proof of identity or a real authenticated session.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Start with a working mock OTP flow; consider a real Fayda integration only after authorized API access is available.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Mock challenges are in-memory and are cleared when the API process restarts.
+- The demo code appears in the UI for testing; this is specific to the mock flow and must not carry over to a live provider.
 
 ## Pointers
 

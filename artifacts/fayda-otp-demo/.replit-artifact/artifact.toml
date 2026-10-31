@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Fayda-Style OTP Demo"
+description = "A clearly labeled prototype demonstrating a Fayda-style identity login flow using fictional test identities and simulated OTP verification. It does not connect to Fayda or send SMS."
+version = "1.0.0"
+id = "artifacts/fayda-otp-demo"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19832
+
+[services.development]
+run = "pnpm --filter @workspace/fayda-otp-demo run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/fayda-otp-demo", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/fayda-otp-demo/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19832"
+BASE_PATH = "/"

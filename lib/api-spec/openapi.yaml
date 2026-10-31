@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: mock-auth
+    description: Fictional identity verification used only by the prototype
 paths:
   /healthz:
     get:
@@ -24,6 +26,54 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/mock/challenges:
+    post:
+      operationId: startMockChallenge
+      tags: [mock-auth]
+      summary: Start a simulated OTP challenge for a fictional test identity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MockChallengeInput"
+      responses:
+        "200":
+          description: Simulated challenge created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MockChallengeResponse"
+        "400":
+          description: Invalid request
+        "404":
+          description: No matching fictional test identity
+        "429":
+          description: Too many demo requests
+  /auth/mock/challenges/verify:
+    post:
+      operationId: verifyMockChallenge
+      tags: [mock-auth]
+      summary: Verify a simulated OTP challenge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MockVerifyInput"
+      responses:
+        "200":
+          description: Challenge verified
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MockVerifyResponse"
+        "400":
+          description: Invalid or incorrect OTP
+        "404":
+          description: Challenge expired or not found
+        "429":
+          description: Challenge attempt limit reached
 components:
   schemas:
     HealthStatus:
@@ -33,4 +83,57 @@ components:
           type: string
       required:
         - status
+    MockChallengeInput:
+      type: object
+      properties:
+        idNumber:
+          type: string
+          minLength: 1
+          maxLength: 64
+      required:
+        - idNumber
+    MockChallengeResponse:
+      type: object
+      properties:
+        challengeId:
+          type: string
+        maskedPhone:
+          type: string
+        expiresInSeconds:
+          type: integer
+        demoOtp:
+          type: string
+          description: Test-only OTP. Never present in a real identity provider response.
+      required:
+        - challengeId
+        - maskedPhone
+        - expiresInSeconds
+        - demoOtp
+    MockVerifyInput:
+      type: object
+      properties:
+        challengeId:
+          type: string
+        otp:
+          type: string
+          minLength: 6
+          maxLength: 6
+          pattern: "^[0-9]{6}$"
+      required:
+        - challengeId
+        - otp
+    MockVerifyResponse:
+      type: object
+      properties:
+        verified:
+          type: boolean
+        displayName:
+          type: string
+        provider:
+          type: string
+          enum: [mock]
+      required:
+        - verified
+        - displayName
+        - provider
 
