@@ -12,4 +12,7 @@ export interface MockChallengeResponse {
   expiresInSeconds: number;
   /** Test-only OTP. Never present in a real identity provider response. */
   demoOtp: string;
+  smsSent?: boolean;
+  smsProvider?: string;
+  smsNotice?: string;
 }

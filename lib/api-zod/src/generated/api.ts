@@ -25,14 +25,18 @@ export const startMockChallengeBodyIdNumberMax = 64;
 
 
 export const StartMockChallengeBody = zod.object({
-  "idNumber": zod.string().min(1).max(startMockChallengeBodyIdNumberMax)
+  "idNumber": zod.string().min(1).max(startMockChallengeBodyIdNumberMax),
+  "phoneNumber": zod.string().optional().describe('Real Ethiopian phone number to receive real cellular SMS')
 })
 
 export const StartMockChallengeResponse = zod.object({
   "challengeId": zod.string(),
   "maskedPhone": zod.string(),
   "expiresInSeconds": zod.number().int(),
-  "demoOtp": zod.string().describe('Test-only OTP. Never present in a real identity provider response.')
+  "demoOtp": zod.string().describe('Test-only OTP. Never present in a real identity provider response.'),
+  "smsSent": zod.boolean().optional(),
+  "smsProvider": zod.string().optional(),
+  "smsNotice": zod.string().optional()
 })
 
 

@@ -12,4 +12,6 @@ export interface MockChallengeInput {
      * @maxLength 64
      */
   idNumber: string;
+  /** Real Ethiopian phone number to receive real cellular SMS */
+  phoneNumber?: string;
 }

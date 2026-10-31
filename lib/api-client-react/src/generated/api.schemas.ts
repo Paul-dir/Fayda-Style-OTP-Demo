@@ -15,6 +15,8 @@ export interface MockChallengeInput {
      * @maxLength 64
      */
   idNumber: string;
+  /** Real Ethiopian phone number to receive real cellular SMS */
+  phoneNumber?: string;
 }
 
 export interface MockChallengeResponse {
@@ -23,6 +25,9 @@ export interface MockChallengeResponse {
   expiresInSeconds: number;
   /** Test-only OTP. Never present in a real identity provider response. */
   demoOtp: string;
+  smsSent?: boolean;
+  smsProvider?: string;
+  smsNotice?: string;
 }
 
 export interface MockVerifyInput {

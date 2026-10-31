@@ -11,10 +11,11 @@ import {
   type ChallengeVerificationResult,
   type IdentityVerificationProvider,
 } from "./identity-verification-provider";
+import { parseEthiopianNumber, sendRealSmsOtp } from "./sms-service";
 
 const CHALLENGE_LIFETIME_MS = 5 * 60 * 1000;
 const RATE_WINDOW_MS = 15 * 60 * 1000;
-const MAX_CHALLENGES_PER_ID = 5;
+const MAX_CHALLENGES_PER_ID = 10;
 const MAX_OTP_ATTEMPTS = 5;
 
 const demoIdentities = new Map([
@@ -59,14 +60,40 @@ export class MockIdentityVerificationProvider
     }
   }
 
-  startChallenge(idNumber: string): ChallengeStartResult {
+  async startChallenge(
+    idNumber: string,
+    phoneNumber?: string,
+  ): Promise<ChallengeStartResult> {
     const normalizedId = idNumber.trim().toUpperCase();
-    const identity = demoIdentities.get(normalizedId);
-    if (!identity) {
-      throw new IdentityVerificationError(
-        404,
-        "No matching demo identity. Try DEMO-4821-7390.",
-      );
+
+    // Determine displayName and target phone
+    let displayName = "Demo Citizen";
+    let maskedPhone = "+251 9•• ••• ••••";
+    let isRealSmsRequested = false;
+    let targetPhone = "";
+
+    if (phoneNumber && phoneNumber.trim().length > 0) {
+      const phoneInfo = parseEthiopianNumber(phoneNumber.trim());
+      if (!phoneInfo.valid) {
+        throw new IdentityVerificationError(
+          400,
+          `Invalid phone number format: "${phoneNumber}". Ethiopian numbers should be 09... (Ethio Telecom) or 07... (Safaricom).`,
+        );
+      }
+      maskedPhone = phoneInfo.masked;
+      targetPhone = phoneInfo.formatted;
+      displayName = `Citizen (${phoneInfo.carrier})`;
+      isRealSmsRequested = true;
+    } else {
+      const identity = demoIdentities.get(normalizedId);
+      if (!identity) {
+        throw new IdentityVerificationError(
+          404,
+          "No matching demo identity. Try DEMO-4821-7390 or enter your real phone number below.",
+        );
+      }
+      displayName = identity.displayName;
+      maskedPhone = identity.maskedPhone;
     }
 
     const now = Date.now();
@@ -80,7 +107,7 @@ export class MockIdentityVerificationProvider
     if (limit.count >= MAX_CHALLENGES_PER_ID) {
       throw new IdentityVerificationError(
         429,
-        "Too many demo codes requested. Try again later.",
+        "Too many verification codes requested. Try again later.",
       );
     }
     limit.count += 1;
@@ -88,19 +115,43 @@ export class MockIdentityVerificationProvider
     const challengeId = randomUUID();
     const demoOtp = randomInt(0, 1_000_000).toString().padStart(6, "0");
     const salt = randomBytes(16).toString("hex");
+
     this.challenges.set(challengeId, {
       salt,
       codeHash: hashOtp(salt, demoOtp),
-      displayName: identity.displayName,
+      displayName,
       expiresAt: now + CHALLENGE_LIFETIME_MS,
       attemptsRemaining: MAX_OTP_ATTEMPTS,
     });
 
+    let smsSent = false;
+    let smsProvider = "none";
+    let smsNotice: string | undefined = undefined;
+
+    if (isRealSmsRequested && targetPhone) {
+      const smsResult = await sendRealSmsOtp({
+        phone: targetPhone,
+        otp: demoOtp,
+        idNumber: normalizedId,
+      });
+
+      smsSent = smsResult.success;
+      smsProvider = smsResult.provider;
+      if (smsResult.success) {
+        smsNotice = `Real SMS delivered to ${targetPhone} via SMSEthiopia (${smsResult.carrier})!`;
+      } else {
+        smsNotice = smsResult.error;
+      }
+    }
+
     return {
       challengeId,
-      maskedPhone: identity.maskedPhone,
+      maskedPhone,
       expiresInSeconds: CHALLENGE_LIFETIME_MS / 1000,
       demoOtp,
+      smsSent,
+      smsProvider,
+      smsNotice,
     };
   }
 
@@ -113,7 +164,7 @@ export class MockIdentityVerificationProvider
       this.challenges.delete(challengeId);
       throw new IdentityVerificationError(
         404,
-        "This demo code has expired. Request a new one.",
+        "This verification code has expired. Request a new one.",
       );
     }
 
@@ -135,7 +186,7 @@ export class MockIdentityVerificationProvider
 
       throw new IdentityVerificationError(
         400,
-        "That demo code is incorrect. Try again.",
+        "That verification code is incorrect. Try again.",
       );
     }
 

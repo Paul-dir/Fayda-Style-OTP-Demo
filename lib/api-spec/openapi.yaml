@@ -90,6 +90,9 @@ components:
           type: string
           minLength: 1
           maxLength: 64
+        phoneNumber:
+          type: string
+          description: Real Ethiopian phone number to receive real cellular SMS
       required:
         - idNumber
     MockChallengeResponse:
@@ -104,6 +107,12 @@ components:
         demoOtp:
           type: string
           description: Test-only OTP. Never present in a real identity provider response.
+        smsSent:
+          type: boolean
+        smsProvider:
+          type: string
+        smsNotice:
+          type: string
       required:
         - challengeId
         - maskedPhone

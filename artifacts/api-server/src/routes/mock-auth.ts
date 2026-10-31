@@ -12,7 +12,7 @@ import { mockIdentityVerificationProvider } from "../lib/mock-identity-verificat
 
 const router: IRouter = Router();
 
-router.post("/auth/mock/challenges", (req, res): void => {
+router.post("/auth/mock/challenges", async (req, res): Promise<void> => {
   const parsed = StartMockChallengeBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Enter a valid demo ID." });
@@ -20,9 +20,11 @@ router.post("/auth/mock/challenges", (req, res): void => {
   }
 
   try {
-    const response = StartMockChallengeResponse.parse(
-      mockIdentityVerificationProvider.startChallenge(parsed.data.idNumber),
+    const rawResult = await mockIdentityVerificationProvider.startChallenge(
+      parsed.data.idNumber,
+      parsed.data.phoneNumber,
     );
+    const response = StartMockChallengeResponse.parse(rawResult);
     res.json(response);
   } catch (error) {
     if (error instanceof IdentityVerificationError) {

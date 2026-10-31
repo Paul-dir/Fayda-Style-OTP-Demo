@@ -3,6 +3,9 @@ export type ChallengeStartResult = {
   maskedPhone: string;
   expiresInSeconds: number;
   demoOtp?: string;
+  smsSent?: boolean;
+  smsProvider?: string;
+  smsNotice?: string;
 };
 
 export type ChallengeVerificationResult = {
@@ -12,7 +15,10 @@ export type ChallengeVerificationResult = {
 };
 
 export interface IdentityVerificationProvider {
-  startChallenge(idNumber: string): ChallengeStartResult;
+  startChallenge(
+    idNumber: string,
+    phoneNumber?: string,
+  ): Promise<ChallengeStartResult> | ChallengeStartResult;
   verifyChallenge(
     challengeId: string,
     otp: string,
