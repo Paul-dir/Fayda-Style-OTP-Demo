@@ -9,17 +9,17 @@ import { logger } from "./lib/logger";
 const app: Express = express();
 
 app.use(
-  pinoHttp({
+  (pinoHttp as unknown as (opts: any) => any)({
     logger,
     serializers: {
-      req(req) {
+      req(req: { id: string | number; method: string; url?: string }) {
         return {
           id: req.id,
           method: req.method,
           url: req.url?.split("?")[0],
         };
       },
-      res(res) {
+      res(res: { statusCode: number }) {
         return {
           statusCode: res.statusCode,
         };
