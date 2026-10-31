@@ -3,6 +3,8 @@
 # compiled output
 dist
 tmp
+artifacts/fayda-otp-demo/public/assets
+artifacts/fayda-otp-demo/public/index.html
 out-tsc
 *.tsbuildinfo
 .expo

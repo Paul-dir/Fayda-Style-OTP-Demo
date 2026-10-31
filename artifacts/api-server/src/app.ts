@@ -34,7 +34,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api", router);
 
 // Serve frontend if built
-const clientDist = path.resolve(process.cwd(), "artifacts/fayda-otp-demo/dist/public");
+const clientDist = fs.existsSync(path.resolve(process.cwd(), "artifacts/fayda-otp-demo/dist"))
+  ? path.resolve(process.cwd(), "artifacts/fayda-otp-demo/dist")
+  : path.resolve(process.cwd(), "artifacts/fayda-otp-demo/dist/public");
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist));
   app.use((req, res, next) => {
